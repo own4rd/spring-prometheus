@@ -16,6 +16,9 @@ public class HelloWorldController {
     @GetMapping("/hello")
     public String hello() {
         customMetrics.incrementCustomMetric();
+
+        double tempo = Math.min(Math.random() * 0.5, 0.5);
+        customMetrics.record(tempo);
         return "Hello, world!";
     }
 }
