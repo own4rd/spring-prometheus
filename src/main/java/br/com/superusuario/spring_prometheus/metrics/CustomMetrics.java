@@ -1,13 +1,22 @@
 package br.com.superusuario.spring_prometheus.metrics;
 
-import io.prometheus.metrics.core.metrics.Counter;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CustomMetrics {
 
-    public static final Counter AULA_REQUEST_COUNT = Counter.builder()
-            .name("aula_requests_total")
-            .help("Número total de requisições")
-            .labelNames("statusCode")
-            .register();
-}
+    private final Counter customMetricCounter;
 
+    public CustomMetrics(MeterRegistry meterRegistry) {
+        customMetricCounter = Counter.builder("aula_requests_total")
+                .description("Número total de requisições")
+                .tag("status", "200")
+                .register(meterRegistry);
+    }
+
+    public void incrementCustomMetric() {
+        customMetricCounter.increment();
+    }
+}
