@@ -13,6 +13,7 @@ public class CustomMetrics {
     private final Counter customMetricCounter;
     private final AtomicLong freeBytesGauge;
     private final Timer requestTimer;
+    private final DistributionSummary requestSummary;
 
     public CustomMetrics(MeterRegistry meterRegistry) {
         customMetricCounter = Counter.builder("aula_requests_total")
@@ -35,8 +36,14 @@ public class CustomMetrics {
                         Duration.ofMillis(300),
                         Duration.ofMillis(500)
                 )
-                .distributionStatisticExpiry(Duration.ofMinutes(5)) // opcional
-                .distributionStatisticBufferLength(5)                // opcional
+                .distributionStatisticExpiry(Duration.ofMinutes(5))
+                .distributionStatisticBufferLength(5)
+                .register(meterRegistry);
+
+        this.requestSummary = DistributionSummary.builder("aula_summary_request_time_seconds")
+                .description("Tempo de resposta da API")
+//                .publishPercentileHistogram(true)
+                .serviceLevelObjectives(0.1, 0.5, 1.0, 2.0)
                 .register(meterRegistry);
     }
 
@@ -51,5 +58,6 @@ public class CustomMetrics {
     public void record(double tempoEmSegundos) {
         long tempoEmMillis = (long) (tempoEmSegundos * 1000);
         requestTimer.record(tempoEmMillis, java.util.concurrent.TimeUnit.MILLISECONDS);
+        requestSummary.record(tempoEmSegundos);
     }
 }
